@@ -3,3 +3,4 @@ __pycache__/
 
 # Ignore Development Environment Questions
 config/dev_questions.sql
+config/setup_mysql_dev.sql
