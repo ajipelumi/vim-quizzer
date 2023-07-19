@@ -1,12 +1,16 @@
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+    listen 443 ssl;
+    listen [::]:443 ssl;
 
     root /var/www/html;
 
     index index.html index.htm index.nginx-debian.html;
 
-    server_name _;
+    server_name quiz.pelumi.tech;
+
+    ssl_certificate /etc/letsencrypt/live/quiz.pelumi.tech/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/quiz.pelumi.tech/privkey.pem;
+
     add_header X-Served-By aws-server;
 
     location / {
@@ -17,5 +21,16 @@ server {
         proxy_pass http://localhost:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name quiz.pelumi.tech;
+
+    location / {
+        return 301 https://$host$request_uri;
     }
 }
