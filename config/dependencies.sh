@@ -1,3 +1,6 @@
+# Update Ubuntu
+sudo apt update
+
 # Install Gunicorn
 pip install gunicorn
 
@@ -12,6 +15,9 @@ pip install sqlalchemy
 
 # Install SQLClient
 sudo apt install -y python3-dev default-libmysqlclient-dev build-essential
+
+#Install MySQLdb
+sudo apt-get install python3-mysqldb
 
 # Install MySQL
 sudo apt install -y mysql-server
