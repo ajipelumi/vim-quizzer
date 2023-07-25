@@ -97,31 +97,27 @@ Returns a JSON object containing 10 questions.
 - URL: `https://quiz.pelumi.tech/api/v1/questions`
 - Method: `GET`
 - URL Params: None
-- Data Params: None
 - Success:
-    - Content: 
-        ```json
-        {
-            "response_code": 200,
-            "results": [
-                {
-                    "question": "What is the command to save a file in Vim?",
-                    "correct_answer": ":w",
-                    "incorrect_answers": [
-                        ":s",
-                        ":save",
-                        ":savefile"
-                    ]
-                }
-                ...
-            ]   
-        }
-        ```
+    ```json
+    {
+        "response_code": 200,
+        "results": [
+            {
+                "question": "What is the command to save a file in Vim?",
+                "correct_answer": ":w",
+                "incorrect_answers": [
+                    ":s",
+                    ":save",
+                    ":savefile"
+                ]
+            }
+        ]   
+    }
+    ```
 - Error:
-    - Content:
-        ```json
-        { "error": "No questions found" }
-        ```
+    ```json
+    { "error": "No questions found" }
+    ```
 
 You can click [here](https://quiz.pelumi.tech/api/v1/questions) on your browser to see the response from the API endpoint.
 
