@@ -1,151 +1,185 @@
 # Vim Quizzer
 
-A simple quizzer for Vim commands.
+A Vim quiz application built with Next.js 14, TypeScript, and Tailwind CSS. Test your Vim knowledge with random questions.
 
-## Table of Contents
-- [Introduction](#introduction)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Technologies](#technologies)
-- [API Reference](#api-reference)
-- [Future Features](#future-features)
-- [Contributing](#contributing)
-- [Blog Posts](#blog-posts)
-- [Author](#author)
-- [Acknowledgements](#acknowledgements)
+## 🚀 Features
 
-## Introduction
-**Vim Quizzer** is a simple quizzer for Vim commands. It is a web application built to help you learn Vim commands.
+- **Modern Tech Stack**: Next.js 14, TypeScript, Tailwind CSS
+- **Responsive Design**: Mobile-first approach with Bootstrap integration
+- **Type Safety**: Full TypeScript implementation with strict type checking
+- **Vercel Ready**: Optimized for Vercel deployment with serverless functions
+- **Performance**: Static generation, optimized builds, and efficient API routes
+- **SEO Optimized**: Meta tags, structured data, and accessibility features
 
-The mission of this project is to help people learn Vim commands in a fun way.
-The quizzer asks you multiple choice questions about Vim commands and also provides answers to the questions.
+## 🛠️ Technologies
 
-Vim Quizzer is accessible to everyone and can be used on any device.
+### Frontend
 
-## Features
-Vim Quizzer has the following features:
-- Multiple choice questions
-- Answers to questions
-- Simple user interface
-- Accessible on any device
+- **Next.js 14**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first CSS framework
+- **Bootstrap 5**: Component library
+- **Font Awesome**: Icon library
 
-## Installation
-As a web application, Vim Quizzer does not require any installation.
-You can access it on any device with a web browser.
+### Backend
 
-Visit **[quiz.pelumi.tech](https://quiz.pelumi.tech/)** to start using it.
+- **Next.js API Routes**: Serverless API endpoints
+- **MySQL2**: Database connection with connection pooling
+- **TypeScript**: Type-safe API development
 
-## Usage
-Vim Quizzer is very easy to use. It is a simple web application with a simple user interface.
+## 📁 Project Structure
 
-To use Vim Quizzer, visit **[quiz.pelumi.tech](https://quiz.pelumi.tech/)** and start answering questions.
+```bash
+vim-quizzer/
+├── components/          # React components
+│   ├── Layout.tsx
+│   ├── Header.tsx
+│   ├── Footer.tsx
+│   ├── WelcomeSection.tsx
+│   ├── QuizSection.tsx
+│   ├── QuestionDisplay.tsx
+│   └── ResultsDisplay.tsx
+├── pages/              # Next.js pages
+│   ├── api/           # API routes
+│   │   └── v1/
+│   │       └── questions.ts
+│   ├── _app.tsx
+│   ├── _document.tsx
+│   └── index.tsx
+├── lib/               # Utility libraries
+│   └── database.ts
+├── types/             # TypeScript type definitions
+│   └── index.ts
+├── styles/            # Global styles
+│   └── globals.css
+├── public/            # Static assets
+│   ├── fonts/
+│   └── images/
+├── package.json
+├── tsconfig.json
+├── next.config.js
+└── tailwind.config.js
+```
 
-## Technologies
-Vim Quizzer is built with the following technologies:
-- **Libraries**
-    - Flask: Web framework for Python
-    - Bootstrap: CSS framework for building responsive websites
-    - jQuery: JavaScript library for DOM manipulation
-    - Flask-Cors: Flask extension for handling Cross Origin Resource Sharing (CORS)
-    - SQLAlchemy: Python SQL toolkit and Object Relational Mapper (ORM) for database management
-    - MySQLdb: Python MySQL client for database connection
+## 🚀 Getting Started
 
-- **Languages**
-    - Python: Programming language for the backend
-    - HTML: Markup language for the frontend
-    - CSS: Stylesheet language for the frontend
-    - JavaScript: Programming language for the frontend
+### Prerequisites
 
-- **Tools**
-    - Git: Version control system for tracking changes in source code
-    - GitHub: Web-based hosting service for version control using Git
+- Node.js 18+
+- npm or yarn
+- MySQL database
 
-- **Platforms**
-    - AWS EC2: Cloud computing platform for hosting the web application
+### Installation
 
-- **Server Software**
-    - Nginx: Web server for serving the web application
-    - Gunicorn: Python WSGI HTTP Server for running the web application
+1. **Clone the repository**
 
-- **Database**
-    - MySQL: Relational database management system for storing data
+   ```bash
+   git clone <repository-url>
+   cd vim-quizzer
+   ```
 
-- **Operating System**
-    - Ubuntu: Linux distribution for the server
+2. **Install dependencies**
 
-- **Resources**
-    - Flask Documentation: [flask.palletsprojects.com](https://flask.palletsprojects.com/en/1.1.x/)
-    - Bootstrap Documentation: [getbootstrap.com](https://getbootstrap.com/docs/4.5/getting-started/introduction/)
-    - jQuery Documentation: [api.jquery.com](https://api.jquery.com/)
-    - Flask-Cors Documentation: [flask-cors.readthedocs.io](https://flask-cors.readthedocs.io/en/latest/)
-    - SQLAlchemy Documentation: [docs.sqlalchemy.org](https://docs.sqlalchemy.org/en/13/)
-    - MySQLdb Documentation: [mysqlclient.readthedocs.io](https://mysqlclient.readthedocs.io/user_guide.html)
-    - AWS EC2 Documentation: [docs.aws.amazon.com](https://docs.aws.amazon.com/ec2/index.html)
-    - Nginx Documentation: [nginx.org](https://nginx.org/en/docs/)
-    - Gunicorn Documentation: [docs.gunicorn.org](https://docs.gunicorn.org/en/stable/)
-    - MySQL Documentation: [dev.mysql.com](https://dev.mysql.com/doc/)
+   ```bash
+   npm install
+   ```
 
-## API Reference
-Vim Quizzer has one API endpoint for getting questions. This endpoint is used by the frontend to get questions from the database.
-The endpoint returns a JSON object containing 10 questions. Each question has a correct answer and 3 incorrect answers. 
-The API endpoint is documented below.
+3. **Set up environment variables**
 
-### Get Questions
-Returns a JSON object containing 10 questions.
+   ```bash
+   cp env.example .env.local
+   ```
 
-- URL: `https://quiz.pelumi.tech/api/v1/questions`
-- Method: `GET`
-- URL Params: None
-- Success:
-    ```json
+4. **Set up the database**
+
+   Import the existing SQL files from the `config/` directory:
+
+   ```bash
+   mysql -u your_username -p vim_quizzer < config/setup_mysql_dev.sql
+   mysql -u your_username -p vim_quizzer < config/dev_questions.sql
+   ```
+
+5. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🔧 Configuration
+
+### TypeScript Configuration
+
+The project uses strict TypeScript configuration with:
+
+- Strict type checking
+- Path mapping for clean imports
+- Next.js optimizations
+
+### Build Optimization
+
+- **Standalone Output**: Optimized for serverless functions
+- **Image Optimization**: Next.js Image component ready
+- **Static Generation**: Where possible for better performance
+
+### Environment Variables
+
+| Variable        | Description                           | Required |
+| --------------- | ------------------------------------- | -------- |
+| `DATABASE_URL`  | MySQL connection string               | Yes      |
+| `MYSQL_CA_CERT` | CA certificate for secure connections | No       |
+
+## 📊 API Endpoints
+
+### GET /api/v1/questions
+
+Returns 10 random Vim quiz questions.
+
+**Response:**
+
+```json
+{
+  "response_code": 200,
+  "results": [
     {
-        "response_code": 200,
-        "results": [
-            {
-                "question": "What is the command to save a file in Vim?",
-                "correct_answer": ":w",
-                "incorrect_answers": [
-                    ":s",
-                    ":save",
-                    ":savefile"
-                ]
-            }
-        ]   
+      "question": "What is the command to save a file in Vim?",
+      "correct_answer": ":w",
+      "incorrect_answers": [":s", ":save", ":savefile"]
     }
-    ```
-- Error:
-    ```json
-    { "error": "No questions found" }
-    ```
+  ]
+}
+```
 
-You can click [here](https://quiz.pelumi.tech/api/v1/questions) on your browser to see the response from the API endpoint.
+## 🎨 Styling
 
-## Future Features
-Vim Quizzer is still in development and more features will be added in the future.
-Some of the features that will be added are:
+The application uses a combination of:
 
-- **API Endpoint for Submitting Questions**
-    - This endpoint will be used by the frontend to submit questions to the database.
-    - The endpoint will be secured with a token-based authentication system.
-    - Only authorized users will be able to submit questions.
+- **Tailwind CSS**: Utility-first styling
+- **Bootstrap 5**: Component library
+- **Custom CSS**: Project-specific styles
+- **Font Awesome**: Icons
 
-- **Answer Explanations**
-    - This feature will provide explanations for the answers to questions.
-    - It will help users understand why an answer is correct or incorrect.
+## 🧪 Development
 
-## Contributing
-If you would like to contribute to this project, you can do so by sending the author a message on [LinkedIn](https://www.linkedin.com/in/ajisafeoluwapelumi/) or [Twitter](https://twitter.com/the_pelumi)
+### Available Scripts
 
-## Blog Posts
-I have written some blog posts about this project and some of the technologies used in building it. You can read them on [DevTo](https://dev.to/ajipelumi)
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript type checking
 
-## Author
-**Ajisafe Oluwapelumi** - Software Engineer  
-    - [Github](https://github.com/ajipelumi)  
-    - [LinkedIn](https://www.linkedin.com/in/ajisafeoluwapelumi/)  
-    - [Twitter](https://twitter.com/the_pelumi)  
-    - [DevTo](https://dev.to/ajipelumi)
+### Code Quality
 
-## Acknowledgements
-- You
+- **ESLint**: Code linting with Next.js rules
+- **TypeScript**: Strict type checking
+
+## 👨‍💻 Author
+
+**Ajisafe Oluwapelumi** - Software Engineer
+
+- [GitHub](https://github.com/ajipelumi)
+- [LinkedIn](https://www.linkedin.com/in/ajisafeoluwapelumi/)
+- [Twitter](https://twitter.com/the_pelumi)
+- [Dev.to](https://dev.to/ajipelumi)
