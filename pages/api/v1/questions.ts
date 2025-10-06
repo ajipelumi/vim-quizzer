@@ -73,8 +73,20 @@ export default async function handler(
       return res.status(200).json(cachedQuestions);
     }
 
-    // Try to get questions from database
-    const questions = await db.query<Question & { incorrect_answer: string }>(`
+    // First, get a random set of 10 question IDs
+    const questionIds = await db.query<{ id: string }>(`
+      SELECT id FROM questions
+      ORDER BY RAND()
+      LIMIT 10
+    `);
+
+    if (questionIds.length === 0) {
+      return res.status(404).json({ error: "No questions found" });
+    }
+
+    // Then get all questions with their incorrect answers in one go
+    const questions = await db.query<Question & { incorrect_answer: string }>(
+      `
       SELECT 
         q.id,
         q.question,
@@ -84,13 +96,11 @@ export default async function handler(
         ia.incorrect_answer
       FROM questions q
       LEFT JOIN incorrect_answers ia ON q.id = ia.question_id
-      ORDER BY RAND()
-      LIMIT 50
-    `);
-
-    if (questions.length === 0) {
-      return res.status(404).json({ error: "No questions found" });
-    }
+      WHERE q.id IN (${questionIds.map(() => '?').join(',')})
+      ORDER BY q.id, ia.incorrect_answer
+      `,
+      questionIds.map(q => q.id)
+    );
 
     // Group questions and their incorrect answers
     const questionMap = new Map<string, Question>();
@@ -112,9 +122,8 @@ export default async function handler(
       }
     });
 
-    // Convert to array and take first 10
-    const allQuestions = Array.from(questionMap.values());
-    const selectedQuestions = allQuestions.slice(0, 10);
+    // Convert to array
+    const selectedQuestions = Array.from(questionMap.values());
 
     // Remove internal fields for API response
     const formattedQuestions = selectedQuestions.map((q) => ({

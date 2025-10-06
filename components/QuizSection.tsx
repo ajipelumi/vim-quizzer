@@ -24,42 +24,17 @@ export default function QuizSection({
       const currentQuestion = quizState.questions[quizState.currentQuestion];
       if (!currentQuestion) return;
 
+      // Create an array with all possible answers (incorrect + correct)
       const allAnswers = [
         ...currentQuestion.incorrect_answers,
         currentQuestion.correct_answer,
       ];
 
-      // Ensure we have exactly 4 answers for consistent display
-      let finalAnswers = [...allAnswers];
+      // Remove duplicates (in case of any data issues)
+      const uniqueAnswers = Array.from(new Set(allAnswers));
 
-      // If we have more than 4, take the first 4 (including correct answer)
-      if (finalAnswers.length > 4) {
-        // Ensure correct answer is included
-        const correctAnswer = currentQuestion.correct_answer;
-        const incorrectAnswers = currentQuestion.incorrect_answers.filter(
-          (a) => a !== correctAnswer
-        );
-
-        // Take 3 incorrect + 1 correct = 4 total
-        finalAnswers = [...incorrectAnswers.slice(0, 3), correctAnswer];
-      }
-
-      // If we have less than 4, pad with generic options
-      while (finalAnswers.length < 4) {
-        const genericOptions = [":q", ":w", ":x", ":!", ":help", ":version"];
-        const unusedOptions = genericOptions.filter(
-          (opt) => !finalAnswers.includes(opt)
-        );
-        if (unusedOptions.length > 0 && unusedOptions[0]) {
-          finalAnswers.push(unusedOptions[0]);
-        } else {
-          break; // Prevent infinite loop
-        }
-      }
-
-      // Shuffle answers while ensuring we have exactly 4
-      const shuffled = finalAnswers
-        .slice(0, 4)
+      // Create answer choices with their correctness status
+      const shuffled = uniqueAnswers
         .map((answer) => ({
           value: answer,
           isCorrect: answer === currentQuestion.correct_answer,
