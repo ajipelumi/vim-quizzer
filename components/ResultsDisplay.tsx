@@ -1,4 +1,5 @@
 import { QuizState } from "@/types";
+import ShareResults from "./ShareResults";
 
 interface ResultsDisplayProps {
   quizState: QuizState;
@@ -73,11 +74,16 @@ export default function ResultsDisplay({
               </div>
             </div>
 
-            <div className="d-grid gap-2">
+            <div className="d-grid gap-3">
               <button className="btn btn-primary btn-lg" onClick={onReset}>
                 <i className="fas fa-redo me-2"></i>
                 Try Again
               </button>
+              
+              <ShareResults 
+                score={quizState.score} 
+                totalQuestions={quizState.totalQuestions} 
+              />
             </div>
           </div>
         </div>

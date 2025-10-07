@@ -1,10 +1,13 @@
-export default function Footer() {
+interface FooterProps {
+  className?: string;
+}
+
+export default function Footer({ className = '' }: FooterProps) {
   return (
-    <footer>
+    <footer className={className}>
       <div className="container">
-        <p className="mb-1">&copy; 2023 Quizzer. All rights reserved.</p>
-        <p className="mb-0">
-          Created By:{" "}
+        <p className="mb-1">
+          &copy; 2023 Vim Quizzer. All rights reserved. Created By:{" "}
           <a
             href="https://github.com/ajipelumi"
             target="_blank"

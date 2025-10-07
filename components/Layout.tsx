@@ -8,12 +8,20 @@ interface LayoutProps {
   showRestartButton?: boolean;
 }
 
-export default function Layout({ children, onRestart, showRestartButton }: LayoutProps) {
+export default function Layout({
+  children,
+  onRestart,
+  showRestartButton,
+}: LayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen w-screen flex flex-col overflow-hidden">
       <Header onRestart={onRestart} showRestartButton={showRestartButton} />
-      <main className="flex-grow pt-4">{children}</main>
-      <Footer />
+      <main className="flex-1 overflow-y-auto">
+        <div className="container">
+          {children}
+        </div>
+      </main>
+      <Footer className="shrink-0" />
     </div>
   );
 }
