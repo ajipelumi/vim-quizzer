@@ -23,7 +23,7 @@ export default function Header({ onRestart, showRestartButton = false }: HeaderP
               </button>
             )}
             <a
-              href="https://www.buymeacoffee.com/yourusername"
+              href="https://www.buymeacoffee.com/victor69"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-black bg-yellow-400 rounded hover:bg-yellow-500 transition-colors"
