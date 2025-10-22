@@ -1,160 +1,81 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import db from "@/lib/database";
-import cache from "@/lib/cache";
 import rateLimiter from "@/lib/rateLimiter";
-import {
-  addSecurityHeaders,
-  validateRequest,
-  SecurityManager,
-} from "@/lib/security";
-import { getRandomQuestions } from "@/lib/mockData";
-import { QuizResponse, Question } from "@/types";
+import { generateVimQuestions } from "@/lib/ai";
+import { QuizQuestion } from "@/types";
 
-// Cache questions for 5 minutes
-const QUESTIONS_CACHE_TTL = 5 * 60 * 1000;
-const CACHE_KEY = "quiz_questions";
+// Rate limiting configuration
+const RATE_LIMIT = {
+  MAX_REQUESTS: 60,
+  WINDOW_MS: 15 * 60 * 1000, // 15 minutes
+};
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<QuizResponse | { error: string }>
+  res: NextApiResponse<{ results: QuizQuestion[] } | { error: string }>
 ) {
-  // Add security headers
-  addSecurityHeaders(res);
+  // Set security headers
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
 
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Validate request
-  const validation = validateRequest(req);
-  if (!validation.valid) {
-    SecurityManager.logSecurityEvent(
-      "INVALID_REQUEST",
-      {
-        reason: validation.reason,
-        method: req.method,
-        url: req.url,
-      },
-      req
-    );
-    return res.status(400).json({ error: "Invalid request" });
-  }
-
   // Rate limiting
-  const clientId = SecurityManager.getClientIP(req);
-  const rateLimit = rateLimiter.isAllowed(clientId, 60, 15 * 60 * 1000); // 60 requests per 15 minutes
+  const forwardedFor = req.headers["x-forwarded-for"];
+  const clientId =
+    (Array.isArray(forwardedFor)
+      ? forwardedFor[0]
+      : typeof forwardedFor === "string"
+      ? forwardedFor
+      : req.socket.remoteAddress) || "unknown-client";
+
+  const rateLimit = rateLimiter.isAllowed(
+    clientId,
+    RATE_LIMIT.MAX_REQUESTS,
+    RATE_LIMIT.WINDOW_MS
+  );
 
   if (!rateLimit.allowed) {
-    res.setHeader("X-RateLimit-Limit", "60");
+    res.setHeader("Retry-After", Math.ceil(RATE_LIMIT.WINDOW_MS / 1000));
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
+  try {
+    const difficulty =
+      (req.query.difficulty as "beginner" | "intermediate" | "advanced") ||
+      "intermediate";
+
+    // Handle exclude query parameter
+    const excludeQuestions = (() => {
+      if (!req.query.exclude) return [];
+      if (Array.isArray(req.query.exclude)) {
+        return req.query.exclude as string[];
+      }
+      return [req.query.exclude as string];
+    })();
+
+    // Generate questions using AI
+    const questions = await generateVimQuestions({
+      count: 10,
+      difficulty,
+      excludeQuestions,
+    });
+
+    // Set rate limit headers
+    res.setHeader("X-RateLimit-Limit", RATE_LIMIT.MAX_REQUESTS.toString());
     res.setHeader("X-RateLimit-Remaining", rateLimit.remaining.toString());
     res.setHeader(
       "X-RateLimit-Reset",
-      new Date(rateLimit.resetTime).toISOString()
-    );
-    return res.status(429).json({
-      error: "Too many requests. Please try again later.",
-      retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
-    } as { error: string; retryAfter: number });
-  }
-
-  // Set rate limit headers
-  res.setHeader("X-RateLimit-Limit", "60");
-  res.setHeader("X-RateLimit-Remaining", rateLimit.remaining.toString());
-  res.setHeader(
-    "X-RateLimit-Reset",
-    new Date(rateLimit.resetTime).toISOString()
-  );
-
-  try {
-    // Check cache first
-    const cachedQuestions = cache.get<QuizResponse>(CACHE_KEY);
-    if (cachedQuestions) {
-      res.setHeader("X-Cache", "HIT");
-      return res.status(200).json(cachedQuestions);
-    }
-
-    // First, get a random set of 10 question IDs
-    const questionIds = await db.query<{ id: string }>(`
-      SELECT id FROM questions
-      ORDER BY RAND()
-      LIMIT 10
-    `);
-
-    if (questionIds.length === 0) {
-      return res.status(404).json({ error: "No questions found" });
-    }
-
-    // Then get all questions with their incorrect answers in one go
-    const questions = await db.query<Question & { incorrect_answer: string }>(
-      `
-      SELECT 
-        q.id,
-        q.question,
-        q.correct_answer,
-        q.created_at,
-        q.updated_at,
-        ia.incorrect_answer
-      FROM questions q
-      LEFT JOIN incorrect_answers ia ON q.id = ia.question_id
-      WHERE q.id IN (${questionIds.map(() => '?').join(',')})
-      ORDER BY q.id, ia.incorrect_answer
-      `,
-      questionIds.map(q => q.id)
+      Math.floor((Date.now() + RATE_LIMIT.WINDOW_MS) / 1000).toString()
     );
 
-    // Group questions and their incorrect answers
-    const questionMap = new Map<string, Question>();
-
-    questions.forEach((row) => {
-      if (!questionMap.has(row.id)) {
-        questionMap.set(row.id, {
-          id: row.id,
-          question: row.question,
-          correct_answer: row.correct_answer,
-          incorrect_answers: [],
-          created_at: row.created_at,
-          updated_at: row.updated_at,
-        });
-      }
-
-      if (row.incorrect_answer) {
-        questionMap.get(row.id)!.incorrect_answers.push(row.incorrect_answer);
-      }
-    });
-
-    // Convert to array
-    const selectedQuestions = Array.from(questionMap.values());
-
-    // Remove internal fields for API response
-    const formattedQuestions = selectedQuestions.map((q) => ({
-      question: q.question,
-      correct_answer: q.correct_answer,
-      incorrect_answers: q.incorrect_answers,
-    }));
-
-    const response: QuizResponse = {
-      response_code: 200,
-      results: formattedQuestions,
-    };
-
-    // Cache the response
-    cache.set(CACHE_KEY, response, QUESTIONS_CACHE_TTL);
-    res.setHeader("X-Cache", "MISS");
-
-    res.status(200).json(response);
+    return res.status(200).json({ results: questions });
   } catch (error) {
-    console.error("Database error:", error);
-
-    // Fall back to mock data when database is not available
-    console.log("Falling back to mock data for development");
-    const mockQuestions = getRandomQuestions(10);
-
-    const response: QuizResponse = {
-      response_code: 200,
-      results: mockQuestions,
-    };
-
-    res.setHeader("X-Cache", "FALLBACK");
-    res.status(200).json(response);
+    console.error("Error in questions API:", error);
+    return res.status(500).json({
+      error: "Failed to generate questions. Please try again later.",
+    });
   }
 }

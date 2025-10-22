@@ -87,10 +87,10 @@ export default function QuizSection({
   }
 
   return (
-    <div className="quiz-container">
-      <div className="quiz-content">
-        {/* Enhanced Progress Indicator */}
-        <div className="progress-section">
+    <div className="w-full max-w-4xl mx-auto px-4 py-4">
+      <div className="w-full bg-vim-bg-light rounded-lg p-4 sm:p-6">
+        {/* Progress Indicator */}
+        <div className="mb-6">
           <ProgressIndicator
             current={quizState.currentQuestion + 1}
             total={quizState.totalQuestions}
@@ -101,17 +101,19 @@ export default function QuizSection({
         </div>
 
         {/* Question Display */}
-        <QuestionDisplay
-          question={currentQuestion}
-          shuffledAnswers={shuffledAnswers}
-          selectedAnswer={selectedAnswer}
-          showResult={showResult}
-          onAnswerSelect={handleAnswerSelect}
-          onNext={handleNext}
-          isLastQuestion={
-            quizState.currentQuestion === quizState.totalQuestions - 1
-          }
-        />
+        <div className="min-h-[60vh] flex flex-col">
+          <QuestionDisplay
+            question={currentQuestion}
+            shuffledAnswers={shuffledAnswers}
+            selectedAnswer={selectedAnswer}
+            showResult={showResult}
+            onAnswerSelect={handleAnswerSelect}
+            onNext={handleNext}
+            isLastQuestion={
+              quizState.currentQuestion === quizState.totalQuestions - 1
+            }
+          />
+        </div>
       </div>
     </div>
   );

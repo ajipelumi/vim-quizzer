@@ -9,65 +9,72 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import logger from "@/lib/logger";
 import { QuizState, QuizQuestion } from "@/types";
 
+type Difficulty = "beginner" | "intermediate" | "advanced";
+
 export default function Home() {
   const [quizState, setQuizState] = useState<QuizState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(new Set());
+  const [difficulty, setDifficulty] = useState<Difficulty>("intermediate");
+  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Set<string>>(
+    new Set()
+  );
 
-  const startQuiz = async () => {
+  const startQuiz = async (selectedDifficulty: Difficulty = difficulty) => {
     setIsLoading(true);
     setError(null);
-
-    logger.info("Quiz started", { sessionId: logger.getSessionId() });
+    setDifficulty(selectedDifficulty);
 
     try {
-      const response = await fetch("/api/v1/questions", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
+      const response = await fetch(
+        `/api/v1/questions?difficulty=${selectedDifficulty}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch questions");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to generate questions");
       }
 
-      // Filter out previously answered questions and randomize the remaining ones
-      const availableQuestions = data.results.filter(
+      const { results: questions } = await response.json();
+
+      if (!Array.isArray(questions) || questions.length === 0) {
+        throw new Error("No questions were generated. Please try again.");
+      }
+
+      // Filter out previously answered questions
+      const availableQuestions = questions.filter(
         (q: QuizQuestion) => !answeredQuestionIds.has(q.question)
       );
-      
-      // If we've answered all questions or have too few left, reset the tracking
+
+      // If we've answered most questions, reset the tracking
+      const questionsToUse =
+        availableQuestions.length >= 5 ? availableQuestions : questions;
+
       if (availableQuestions.length < 5) {
         setAnsweredQuestionIds(new Set());
-        // Use all questions in this case
-        const shuffledQuestions = [...data.results].sort(() => Math.random() - 0.5);
-        
-        setQuizState({
-          currentQuestion: 0,
-          totalQuestions: shuffledQuestions.length,
-          score: 0,
-          questions: shuffledQuestions,
-          answers: [],
-          isComplete: false,
-        });
-      } else {
-        // Use available questions that haven't been answered yet
-        const shuffledQuestions = [...availableQuestions].sort(() => Math.random() - 0.5);
-        
-        setQuizState({
-          currentQuestion: 0,
-          totalQuestions: shuffledQuestions.length,
-          score: 0,
-          questions: shuffledQuestions,
-          answers: [],
-          isComplete: false,
-        });
       }
 
+      // Shuffle the questions
+      const shuffledQuestions = [...questionsToUse].sort(
+        () => Math.random() - 0.5
+      );
+
+      setQuizState({
+        currentQuestion: 0,
+        totalQuestions: shuffledQuestions.length,
+        score: 0,
+        questions: shuffledQuestions,
+        answers: [],
+        isComplete: false,
+      });
+
       logger.info("Quiz loaded successfully", {
-        questionCount: data.results.length,
+        questionCount: questions.length,
         sessionId: logger.getSessionId(),
       });
     } catch (err) {
@@ -109,7 +116,7 @@ export default function Home() {
       });
 
       // Track this question as answered
-      setAnsweredQuestionIds(prev => {
+      setAnsweredQuestionIds((prev) => {
         const updated = new Set(prev);
         updated.add(currentQuestion.question);
         return updated;
@@ -161,11 +168,14 @@ export default function Home() {
 
       <ErrorBoundary>
         <AccessibilityManager>
-          <Layout onRestart={resetQuiz} showRestartButton={!!quizState && !quizState.isComplete}>
+          <Layout
+            onRestart={resetQuiz}
+            showRestartButton={!!quizState && !quizState.isComplete}
+          >
             {isLoading && !quizState ? (
               <div className="container">
                 <div className="row">
-                  <div className="col-md-12 text-center py-5">
+                  <div className="col-md-12 mt-12 text-center py-5">
                     <LoadingSpinner
                       size="lg"
                       text="Loading quiz questions..."
