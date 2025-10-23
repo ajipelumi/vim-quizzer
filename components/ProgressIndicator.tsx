@@ -15,17 +15,17 @@ export default function ProgressIndicator({
   score = 0,
   className = "",
 }: ProgressIndicatorProps) {
-  const percentage = Math.round((current / total) * 100);
-  const progress = (current / total) * 100;
+  const completedQuestions = current - 1;
+  const percentage = Math.round((completedQuestions / total) * 100);
 
   return (
     <div className={`w-full ${className}`}>
-      {/* Progress Bar */}
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-vim-keyword font-medium">
+      {/* Header with Question Count and Score */}
+      <div className="flex flex-col items-center justify-center -mt-4 mb-2 space-y-2">
+        <span className="text-vim-keyword font-medium text-center">
           Question {current} of {total}
         </span>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-center space-x-4">
           {showPercentage && (
             <span className="text-vim-fg-dim text-sm">{percentage}%</span>
           )}
@@ -37,35 +37,41 @@ export default function ProgressIndicator({
         </div>
       </div>
 
-      {/* Progress Bar Visual */}
-      <div className="w-full bg-vim-bg-lighter rounded-full h-2 overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-vim-accent to-vim-keyword transition-all duration-500 ease-out rounded-full"
-          style={{ width: `${progress}%` }}
-        >
-          {/* Animated shine effect */}
-          <div className="h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-20 animate-pulse"></div>
-        </div>
-      </div>
-
-      {/* Progress Steps */}
-      <div className="flex justify-between mt-2">
+      {/* New Progress Bar Design */}
+      <div className="w-full grid grid-cols-10 gap-1 -mb-8">
         {Array.from({ length: total }, (_, index) => (
           <div
             key={index}
-            className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-              index < current
-                ? "bg-vim-accent"
-                : index === current - 1
-                ? "bg-vim-keyword"
-                : "bg-vim-border"
-            }`}
+            className="relative h-2 group"
             title={`Question ${index + 1}`}
-          />
+          >
+            <div
+              className={`
+                w-full h-full rounded transition-all duration-300
+                ${
+                  index < completedQuestions
+                    ? "bg-gradient-to-r from-vim-accent to-vim-keyword"
+                    : index === completedQuestions
+                    ? "bg-vim-selection"
+                    : "bg-vim-bg-lighter"
+                }
+                ${index === current - 1 ? "animate-pulse" : ""}
+              `}
+            />
+            {/* Hover Label */}
+            <div
+              className="absolute -top-8 left-1/2 transform -translate-x-1/2 
+                          opacity-0 group-hover:opacity-100 transition-opacity
+                          text-xs bg-vim-bg-dark px-2 py-1 rounded whitespace-nowrap"
+            >
+              Question {index + 1}
+              {index < completedQuestions && (
+                <span className="ml-1 text-vim-accent">✓</span>
+              )}
+            </div>
+          </div>
         ))}
       </div>
     </div>
   );
 }
-
-

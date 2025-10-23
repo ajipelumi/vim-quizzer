@@ -22,25 +22,15 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
-
     this.setState({
       error,
       errorInfo,
     });
 
-    // Log error to monitoring service in production
     if (process.env.NODE_ENV === "production") {
       // Here you would typically send to error monitoring service
       // like Sentry, LogRocket, etc.
-      console.error("Production error:", {
-        error: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href,
-      });
+      // Error reporting logic would go here
     }
   }
 

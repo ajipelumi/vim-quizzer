@@ -3,16 +3,19 @@ interface HeaderProps {
   showRestartButton?: boolean;
 }
 
-export default function Header({ onRestart, showRestartButton = false }: HeaderProps) {
+export default function Header({
+  onRestart,
+  showRestartButton = false,
+}: HeaderProps) {
   return (
     <header className="h-16">
       <nav className="navbar h-full">
         <div className="container h-full flex items-center justify-between">
           <a className="navbar-brand" href="#">
-            <span className="text-vim-keyword">Vim</span>{" "}
-            <span className="text-vim-type">Quizzer</span>
+            <span className="text-vim-keyword">V</span>
+            <span className="text-vim-type">Q</span>
           </a>
-          
+
           <div className="flex items-center space-x-4">
             {showRestartButton && onRestart && (
               <button

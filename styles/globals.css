@@ -32,8 +32,7 @@
 }
 html,
 body {
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100%;
 }
 body {
   font-family: "Garet-Book", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
@@ -346,16 +345,14 @@ body {
 html,
 body,
 #__next,
-#root,
-main {
-  height: 100vh !important;
-  overflow: hidden !important;
-  margin: 0 !important;
+#root {
+  min-height: 100vh;
+  margin: 0;
 }
 
 /* Prevent the main container from scrolling; size quiz area to fit layout. */
 main {
-  overflow: hidden !important;
+  overflow: visible;
 }
 
 header {
@@ -366,14 +363,9 @@ footer {
 }
 
 .quiz-container {
-  min-height: 0 !important;
-  height: calc(
-    100vh - 3.5rem - 2.5rem
-  ) !important; /* viewport minus header/footer */
-  overflow: hidden !important;
   display: flex;
   flex-direction: column;
-  padding: 1rem 0.75rem; /* reduced padding */
+  padding: 1rem 0.75rem;
 }
 
 /* Focus styles for accessibility */

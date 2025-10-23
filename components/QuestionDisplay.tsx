@@ -71,6 +71,7 @@ export default function QuestionDisplay({
                   showResult ? `answer-${index}-status` : undefined
                 }
                 tabIndex={showResult ? -1 : 0}
+                style={{ outline: "none" }}
               >
                 <span className="answer-text">{answer.value}</span>
                 {showResult && answer.value === selectedAnswer && (
@@ -99,26 +100,28 @@ export default function QuestionDisplay({
             ))}
           </div>
 
-          {showResult && (
-            <div className="text-center mt-4">
-              <button
-                className="btn btn-primary btn-lg"
-                onClick={onNext}
-                data-action={isLastQuestion ? "finish" : "next"}
-                aria-describedby="answer-feedback"
-              >
-                {isLastQuestion ? "Finish Quiz" : "Next Question"}
-              </button>
-            </div>
-          )}
+          <div className="text-center mt-4">
+            <button
+              className="btn btn-primary btn-lg"
+              onClick={onNext}
+              data-action={isLastQuestion ? "finish" : "next"}
+              aria-describedby={showResult ? "answer-feedback" : undefined}
+              disabled={!showResult}
+              style={{ opacity: showResult ? 1 : 0.5 }}
+            >
+              {isLastQuestion ? "Finish Quiz" : "Next Question"}
+            </button>
+          </div>
 
           {showResult && (
-            <div id="answer-feedback" className="sr-only" aria-live="polite">
-              {selectedAnswer &&
-                (shuffledAnswers.find((a) => a.value === selectedAnswer)
-                  ?.isCorrect
-                  ? "Correct! Well done."
-                  : "Incorrect. The correct answer was highlighted.")}
+            <div>
+              <div id="answer-feedback" className="sr-only" aria-live="polite">
+                {selectedAnswer &&
+                  (shuffledAnswers.find((a) => a.value === selectedAnswer)
+                    ?.isCorrect
+                    ? "Correct! Well done."
+                    : "Incorrect. The correct answer was highlighted.")}
+              </div>
             </div>
           )}
         </div>
