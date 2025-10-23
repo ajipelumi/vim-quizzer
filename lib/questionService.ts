@@ -3,11 +3,9 @@ import { QuizQuestion } from "@/types";
 
 export async function getQuestionsFromDatabase(
   count: number,
-  difficulty: "beginner" | "intermediate" | "advanced",
-  excludeQuestions: string[] = []
+  difficulty: "beginner" | "intermediate" | "advanced"
 ): Promise<QuizQuestion[]> {
   try {
-    // First check if the difficulty column exists
     const checkColumn = await DatabaseConnection.query<{
       exists_check: number;
     }>(
@@ -23,7 +21,6 @@ export async function getQuestionsFromDatabase(
       checkColumn[0] &&
       (checkColumn[0] as { exists_check: number }).exists_check > 0;
 
-    // Step 1: Get random question IDs
     const query = hasDifficultyColumn
       ? `SELECT id FROM questions 
          WHERE difficulty = '${difficulty}' 
@@ -39,7 +36,6 @@ export async function getQuestionsFromDatabase(
       throw new Error("No questions found in the database");
     }
 
-    // Step 2: Get full question details with incorrect answers
     const idList = questionIds.map((q) => `'${q.id}'`).join(",");
     const detailsQuery = `
       SELECT 
@@ -58,8 +54,6 @@ export async function getQuestionsFromDatabase(
       correct_answer: string;
       incorrect_answer: string | null;
     }>(detailsQuery);
-
-    // Step 3: Group questions and their incorrect answers
     const questionMap = new Map<string, QuizQuestion>();
 
     questions.forEach((row) => {
@@ -80,7 +74,7 @@ export async function getQuestionsFromDatabase(
     });
 
     return Array.from(questionMap.values());
-  } catch (error) {
+  } catch {
     throw new Error("Failed to fetch questions from database");
   }
 }

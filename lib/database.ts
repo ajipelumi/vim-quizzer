@@ -36,7 +36,6 @@ class DatabaseConnection {
       database,
     };
 
-    // Handle SSL configuration for cloud databases
     if (sslMode) {
       const caCert = process.env.MYSQL_CA_CERT
         ? Buffer.from(process.env.MYSQL_CA_CERT, "base64").toString("utf8")
@@ -75,18 +74,8 @@ class DatabaseConnection {
   public static getInstance(): DatabaseConnection {
     if (!DatabaseConnection.instance) {
       try {
-        console.log(
-          "[DB Connection] Creating new database connection instance"
-        );
         DatabaseConnection.instance = new DatabaseConnection();
-        console.log(
-          "[DB Connection] Successfully created database connection pool"
-        );
       } catch (error) {
-        console.error(
-          "[DB Connection] Failed to create database connection:",
-          error
-        );
         throw error;
       }
     }
@@ -101,7 +90,6 @@ class DatabaseConnection {
       const [rows] = await this.pool.execute(sql, params);
       return rows as T[];
     } catch (error) {
-      // Handle specific MySQL errors
       if (error instanceof Error) {
         if (error.message.includes("ECONNREFUSED")) {
           throw new Error(

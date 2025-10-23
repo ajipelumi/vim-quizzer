@@ -37,9 +37,9 @@ export class SecurityManager {
 
     return input
       .trim()
-      .replace(/[<>]/g, "") // Remove potential HTML tags
-      .replace(/['"]/g, "") // Remove quotes
-      .substring(0, 1000); // Limit length
+      .replace(/[<>]/g, "")
+      .replace(/['"]/g, "")
+      .substring(0, 1000);
   }
 
   /**
@@ -50,11 +50,10 @@ export class SecurityManager {
       return true;
     }
 
-    // Check for private network ranges
     const privateRanges = [
-      /^10\./, // 10.0.0.0/8
-      /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // 172.16.0.0/12
-      /^192\.168\./, // 192.168.0.0/16
+      /^10\./,
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+      /^192\.168\./,
     ];
 
     return privateRanges.some((range) => range.test(ip));
@@ -86,7 +85,6 @@ export class SecurityManager {
     const userAgent = req.headers["user-agent"];
     const contentType = req.headers["content-type"];
 
-    // Check for suspicious user agents
     if (userAgent) {
       const suspiciousPatterns = [
         /bot/i,
@@ -97,13 +95,10 @@ export class SecurityManager {
         /wget/i,
       ];
 
-      // Allow some legitimate bots but block suspicious ones
       if (suspiciousPatterns.some((pattern) => pattern.test(userAgent))) {
         return { valid: false, reason: "Suspicious user agent" };
       }
     }
-
-    // Validate content type for POST requests
     if (req.method === "POST" && contentType) {
       const allowedTypes = [
         "application/json",
@@ -120,19 +115,7 @@ export class SecurityManager {
   /**
    * Log security events
    */
-  public static logSecurityEvent(
-    event: string,
-    details: Record<string, unknown>,
-    req?: NextApiRequest
-  ): void {
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      event,
-      details,
-      ip: req ? this.getClientIP(req) : "unknown",
-      userAgent: req?.headers["user-agent"] || "unknown",
-    };
-  }
+  public static logSecurityEvent(): void {}
 }
 
 /**

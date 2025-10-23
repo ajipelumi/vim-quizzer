@@ -28,9 +28,7 @@ async function ensureTable() {
   )`;
   try {
     await db.query(sql);
-  } catch (e) {
-    // If DDL fails (permissions, etc.), proceed without throwing to allow cache fallback
-  }
+  } catch {}
 }
 
 export async function appendCostEntry(entry: CostEntry): Promise<void> {
@@ -52,8 +50,7 @@ export async function appendCostEntry(entry: CostEntry): Promise<void> {
       entry.output_cost_usd,
       entry.total_cost_usd,
     ]);
-  } catch (e) {
-    // Fallback to cache if database insert fails
+  } catch {
     const existing = (await cache.get<CostEntry[]>("ai:costs")) || [];
     existing.push(entry);
     await cache.set("ai:costs", existing, 24 * 60 * 60 * 1000);
@@ -90,7 +87,7 @@ export async function readCostEntries(limit = 500): Promise<CostEntry[]> {
       output_cost_usd: Number(r.output_cost_usd),
       total_cost_usd: Number(r.total_cost_usd),
     }));
-  } catch (e) {
+  } catch {
     return (await cache.get<CostEntry[]>("ai:costs")) || [];
   }
 }

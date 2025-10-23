@@ -26,7 +26,6 @@ export async function generateVimQuestions({
 }: GenerateQuestionsOptions): Promise<QuizQuestion[]> {
   const cacheKey = `questions:${difficulty}:${count}`;
 
-  // Try to get questions from cache first
   try {
     const cached = await cache.get<QuizQuestion[]>(cacheKey);
     if (cached) {
@@ -37,11 +36,8 @@ export async function generateVimQuestions({
         return filteredCached.slice(0, count);
       }
     }
-  } catch {
-    // Continue with AI generation if cache fails
-  }
+  } catch {}
 
-  // Try AI generation with database fallback
   return generateWithAIFallback(count, difficulty, excludeQuestions, cacheKey);
 }
 
@@ -55,32 +51,18 @@ async function generateWithAIFallback(
   cacheKey: string
 ): Promise<QuizQuestion[]> {
   try {
-    console.log("[AI] Attempting to generate questions with AI:", {
-      count,
-      difficulty,
-    });
     const aiQuestions = await generateWithAI(
       count,
       difficulty,
       excludeQuestions
     );
 
-    console.log("[AI] Successfully generated questions with AI");
-    // Cache the AI-generated questions
-    await cache.set(cacheKey, aiQuestions, 3600); // Cache for 1 hour
-
+    await cache.set(cacheKey, aiQuestions, 3600);
     return aiQuestions;
-  } catch (error) {
-    console.log("[AI] Failed to generate questions with AI:", error);
-    console.log("[AI] Falling back to database");
+  } catch {
     try {
-      return await getQuestionsFromDatabase(
-        count,
-        difficulty,
-        excludeQuestions
-      );
-    } catch (dbError) {
-      console.error("[AI] Database fallback also failed:", dbError);
+      return await getQuestionsFromDatabase(count, difficulty);
+    } catch {
       throw new Error(
         "Failed to generate questions and database fallback failed"
       );
@@ -135,7 +117,6 @@ async function generateWithAI(
     ],
   });
 
-  // Track API usage and costs
   const promptTokens = response.usage?.prompt_tokens ?? 0;
   const completionTokens = response.usage?.completion_tokens ?? 0;
   const totalTokens =
@@ -147,7 +128,6 @@ async function generateWithAI(
     completionTokens
   );
 
-  // Log the API usage
   await appendCostEntry({
     timestamp: new Date().toISOString(),
     endpoint: "chat.completions",
@@ -160,25 +140,21 @@ async function generateWithAI(
     total_cost_usd: totalCost,
   });
 
-  // Process the AI response
   const content = response.choices[0]?.message?.content;
   if (!content) {
     throw new Error("No content in AI response");
   }
 
-  // Extract JSON from markdown code block if present
   const codeBlockMatch = content.match(/```(?:json)?\n([\s\S]*?)\n```/);
   const jsonContent = codeBlockMatch?.[1] ?? content;
 
   try {
-    // Parse and validate the response
     const questions = JSON.parse(jsonContent) as QuizQuestion[];
 
     if (!Array.isArray(questions) || questions.length === 0) {
       throw new Error("Empty or invalid questions array from AI");
     }
 
-    // Validate each question
     const validQuestions = questions.filter(
       (q) =>
         q.question &&
@@ -191,7 +167,6 @@ async function generateWithAI(
       throw new Error("No valid questions in AI response");
     }
 
-    // Filter out excluded questions
     return validQuestions.filter((q) => !excludeQuestions.includes(q.question));
   } catch {
     throw new Error("Invalid response format from AI");
