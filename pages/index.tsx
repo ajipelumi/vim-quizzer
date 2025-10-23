@@ -6,7 +6,6 @@ import QuizSection from "@/components/QuizSection";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import AccessibilityManager from "@/components/AccessibilityManager";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import logger from "@/lib/logger";
 import { QuizState, QuizQuestion } from "@/types";
 
 type Difficulty = "beginner" | "intermediate" | "advanced";
@@ -72,20 +71,10 @@ export default function Home() {
         answers: [],
         isComplete: false,
       });
-
-      logger.info("Quiz loaded successfully", {
-        questionCount: questions.length,
-        sessionId: logger.getSessionId(),
-      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
-
-      logger.error("Failed to load quiz", {
-        error: errorMessage,
-        sessionId: logger.getSessionId(),
-      });
     } finally {
       setIsLoading(false);
     }
@@ -105,15 +94,6 @@ export default function Home() {
 
       const isComplete =
         quizState.currentQuestion === quizState.totalQuestions - 1;
-
-      // Log answer
-      logger.info("Question answered", {
-        questionNumber: quizState.currentQuestion + 1,
-        isCorrect,
-        selectedAnswer: answer,
-        correctAnswer: currentQuestion.correct_answer,
-        sessionId: logger.getSessionId(),
-      });
 
       // Track this question as answered
       setAnsweredQuestionIds((prev) => {
@@ -136,7 +116,6 @@ export default function Home() {
   );
 
   const resetQuiz = useCallback(() => {
-    logger.info("Quiz reset", { sessionId: logger.getSessionId() });
     setQuizState(null);
     setError(null);
   }, []);

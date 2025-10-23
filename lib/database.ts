@@ -20,6 +20,10 @@ class DatabaseConnection {
   private static instance: DatabaseConnection;
   private pool: mysql.Pool;
 
+  public escape(val: string | number): string {
+    return this.pool.escape(val);
+  }
+
   private constructor() {
     const { dbUrl, user, password, database, sslMode } =
       this.parseDatabaseUrl();
@@ -32,7 +36,7 @@ class DatabaseConnection {
       database,
     };
 
-    // If ssl is required, try to load CA from env
+    // Handle SSL configuration for cloud databases
     if (sslMode) {
       const caCert = process.env.MYSQL_CA_CERT
         ? Buffer.from(process.env.MYSQL_CA_CERT, "base64").toString("utf8")
@@ -40,7 +44,7 @@ class DatabaseConnection {
 
       config.ssl = caCert
         ? { ca: caCert, rejectUnauthorized: true }
-        : { rejectUnauthorized: false }; // fallback if cert missing
+        : { rejectUnauthorized: false };
     }
 
     this.pool = mysql.createPool({
@@ -70,7 +74,21 @@ class DatabaseConnection {
 
   public static getInstance(): DatabaseConnection {
     if (!DatabaseConnection.instance) {
-      DatabaseConnection.instance = new DatabaseConnection();
+      try {
+        console.log(
+          "[DB Connection] Creating new database connection instance"
+        );
+        DatabaseConnection.instance = new DatabaseConnection();
+        console.log(
+          "[DB Connection] Successfully created database connection pool"
+        );
+      } catch (error) {
+        console.error(
+          "[DB Connection] Failed to create database connection:",
+          error
+        );
+        throw error;
+      }
     }
     return DatabaseConnection.instance;
   }
@@ -83,8 +101,6 @@ class DatabaseConnection {
       const [rows] = await this.pool.execute(sql, params);
       return rows as T[];
     } catch (error) {
-      console.error("Database query error:", error);
-
       // Handle specific MySQL errors
       if (error instanceof Error) {
         if (error.message.includes("ECONNREFUSED")) {

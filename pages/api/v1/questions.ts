@@ -72,8 +72,7 @@ export default async function handler(
     );
 
     return res.status(200).json({ results: questions });
-  } catch (error) {
-    console.error("Error in questions API:", error);
+  } catch {
     return res.status(500).json({
       error: "Failed to generate questions. Please try again later.",
     });

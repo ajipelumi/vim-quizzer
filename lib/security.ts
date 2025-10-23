@@ -132,8 +132,6 @@ export class SecurityManager {
       ip: req ? this.getClientIP(req) : "unknown",
       userAgent: req?.headers["user-agent"] || "unknown",
     };
-
-    console.warn("SECURITY_EVENT:", JSON.stringify(logEntry));
   }
 }
 
